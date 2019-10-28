@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/payments" name="getPaymentDetailsAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST GET">
+        <inSequence>
+            <clone id="i">
+                <target>
+                    <sequence>
+                        <log level="custom">
+                            <property name="message" value="path1"/>
+                        </log>
+                        <call>
+                            <endpoint key="PayApp1Endpoint"/>
+                        </call>
+                    </sequence>
+                </target>
+                <target>
+                    <sequence>
+                        <log level="custom">
+                            <property name="message" value="path2"/>
+                        </log>
+                        <call>
+                            <endpoint key="PayApp2Endpoint"/>
+                        </call>
+                    </sequence>
+                </target>
+            </clone>
+            <property name="Aggregated_Responses" scope="default">
+                <jsonObject/>
+            </property>
+            <aggregate id="i">
+                <completeCondition>
+                    <messageCount max="-1" min="-1"/>
+                </completeCondition>
+                <onComplete enclosingElementProperty="Aggregated_Responses" expression="$body/*[1]" xmlns:ns="http://org.apache.synapse/xsd">
+                    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+                    <send/>
+                </onComplete>
+            </aggregate>
+        </inSequence>
+        <outSequence>
+            <drop/>
+        </outSequence>
+        <faultSequence>
+            <log category="ERROR" level="full"/>
+            <respond/>
+        </faultSequence>
+    </resource>
+</api>

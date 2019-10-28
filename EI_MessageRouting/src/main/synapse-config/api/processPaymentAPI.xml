@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/process" name="processPaymentAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <switch description="Route based on the Operation" source="json-eval($.payload.packet[0].service)">
+                <case regex="DSTV">
+                    <call>
+                        <endpoint key="PayAppEP1"/>
+                    </call>
+                </case>
+                <default>
+                    <call>
+                        <endpoint key="PayAppEP2"/>
+                    </call>
+                </default>
+            </switch>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log category="ERROR" level="full"/>
+        </faultSequence>
+    </resource>
+</api>

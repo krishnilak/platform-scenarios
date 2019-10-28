@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><artifacts>
+    <artifact name="processPaymentAPI" groupId="com.example.Demo_Usecase1.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/processPaymentAPI.xml</file>
+    </artifact>
+    <artifact name="PayAppEP1" groupId="com.example.Demo_Usecase1.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/PayAppEP1.xml</file>
+    </artifact>
+    <artifact name="PayAppEP2" groupId="com.example.Demo_Usecase1.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/PayAppEP2.xml</file>
+    </artifact>
+</artifacts>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/batch" name="paymentBatchAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST">
+        <inSequence>
+            <iterate expression="json-eval($.payload.packet)" id="i">
+                <target>
+                    <sequence>
+                        <switch source="json-eval($.service)">
+                            <case regex="DSTV">
+                                <call>
+                                    <endpoint key="batchProcessEP1"/>
+                                </call>
+                            </case>
+                            <default>
+                                <call>
+                                    <endpoint key="batchProcessEP2"/>
+                                </call>
+                            </default>
+                        </switch>
+                    </sequence>
+                </target>
+            </iterate>
+            <property name="aggregateResponse" scope="default">
+                <jsonObject/>
+            </property>
+            <aggregate id="i">
+                <completeCondition>
+                    <messageCount max="-1" min="-1"/>
+                </completeCondition>
+                <onComplete enclosingElementProperty="aggregateResponse" expression="$body/*[1]">
+                    <send/>
+                </onComplete>
+            </aggregate>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <log category="ERROR" level="full"/>
+        </faultSequence>
+    </resource>
+</api>

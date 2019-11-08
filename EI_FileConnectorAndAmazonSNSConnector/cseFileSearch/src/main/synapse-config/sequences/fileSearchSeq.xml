@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="fileSearchSeq" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+    <fileconnector.search>
+        <source>/Users/krishni/Documents/work/demos/APAC/cse/sample-directories/root</source>
+        <filePattern>[a-zA-Z]*.json</filePattern>
+        <recursiveSearch>true</recursiveSearch>
+    </fileconnector.search>
+    <log level="full"/>
+    <iterate expression="$env/*[local-name()='Body']/ns:result/ns:file" id="i" xmlns:ns="http://org.wso2.esbconnectors.FileConnector">
+        <target>
+            <sequence>
+                <log level="custom">
+                    <property name="message" value="iterating ...................................."/>
+                </log>
+                <property expression="//ns:file[1]/text()" name="source" scope="default" type="STRING"/>
+                <log level="custom">
+                    <property expression="$ctx:source" name="source"/>
+                </log>
+                <filter regex="[0-9a-zA-Z\/]*day\/delivered" source="$ctx:source">
+                    <then>
+                        <log level="custom">
+                            <property name="message" value="path2"/>
+                        </log>
+                        <propertyGroup>
+                            <property expression="fn:substring-after(get-property('source'),'/Users/krishni/Documents/work/demos/APAC/cse/sample-directories/root/')" name="file_path" scope="default" type="STRING"/>
+                            <property expression="fn:substring-before(get-property('file_path'),'/')" name="broker" scope="default" type="STRING"/>
+                            <property expression="fn:substring-after(get-property('file_path'),'/')" name="s1" scope="default" type="STRING"/>
+                            <property expression="fn:substring-before(get-property('s1'),'/')" name="day" scope="default" type="STRING"/>
+                            <property expression="fn:substring-after(get-property('s1'),'/')" name="s2" scope="default" type="STRING"/>
+                            <property expression="fn:substring-after(get-property('s2'),'/')" name="file_name" scope="default" type="STRING"/>
+                            <property expression="fn:substring-before(get-property('file_name'),'.')" name="event_name" scope="default" type="STRING"/>
+                            <property expression="fn:concat('/Users/krishni/Documents/work/demos/APAC/cse/sample-directories/root/',$ctx:broker, '/', $ctx:day , '/', 'notified/')" name="destination" scope="default" type="STRING"/>
+                        </propertyGroup>
+                        <log level="custom">
+                            <property expression="$ctx:source" name="source path"/>
+                            <property expression="$ctx:file_path" name="file_path"/>
+                            <property expression="$ctx:broker" name="broker"/>
+                            <property expression="$ctx:s1" name="s1"/>
+                            <property expression="$ctx:day" name="day"/>
+                            <property expression="$ctx:s2" name="s2"/>
+                            <property expression="$ctx:file_name" name="file_name"/>
+                            <property expression="$ctx:event_name" name="event_name"/>
+                            <property expression="$ctx:destination" name="destination"/>
+                        </log>
+                        <fileconnector.move>
+                            <source>{$ctx:source}</source>
+                            <destination>{$ctx:destination}</destination>
+                            <includeParentDirectory>true</includeParentDirectory>
+                        </fileconnector.move>
+                        <log level="custom">
+                            <property expression="fn:concat('file moved from ' , $ctx:source  , ' to ', $ctx:destination )" name="message"/>
+                        </log>
+                        <call-template target="snsPublishSeqTemplate">
+                            <with-param name="broker" value="broker2"/>
+                            <with-param name="event" value="{$ctx:event_name}"/>
+                            <with-param name="day" value="monday"/>
+                        </call-template>
+                    </then>
+                    <else>
+                        <log level="custom">
+                            <property name="message" value="path1"/>
+                        </log>
+                    </else>
+                </filter>
+                <drop/>
+            </sequence>
+        </target>
+    </iterate>
+    <log level="custom">
+        <property name="message" value="iterate finished"/>
+    </log>
+    <respond/>
+</sequence>

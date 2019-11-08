@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template name="snsPublishSeqTemplate" xmlns="http://ws.apache.org/ns/synapse">
+    <parameter name="event"/>
+    <sequence>
+        <log level="custom">
+            <property expression="$func:event" name="event"/>
+        </log>
+        <log level="full"/>
+        <amazonsns.init>
+            <region>us-east-2</region>
+            <accessKeyId>AKIAJSHPEKH35BYECBMA</accessKeyId>
+            <secretAccessKey>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</secretAccessKey>
+            <version>2010-03-31</version>
+        </amazonsns.init>
+        <filter regex="^[^2][0-9][0-9]" source="$axis2:HTTP_SC">
+            <then>
+                <switch source="$axis2:HTTP_SC">
+                    <case regex="401">
+                        <property name="ERROR_CODE" scope="default" type="STRING" value=""/>
+                        <property name="ERROR_MESSAGE" scope="default" type="STRING" value="401"/>
+                    </case>
+                    <case regex="422">
+                        <property name="ERROR_CODE" scope="default" type="STRING" value=""/>
+                        <property name="ERROR_MESSAGE" scope="default" type="STRING" value="422"/>
+                    </case>
+                    <case regex="404">
+                        <property name="ERROR_CODE" scope="default" type="STRING" value=""/>
+                        <property name="ERROR_MESSAGE" scope="default" type="STRING" value="404"/>
+                    </case>
+                    <case regex="403">
+                        <property name="ERROR_CODE" scope="default" type="STRING" value=""/>
+                        <property name="ERROR_MESSAGE" scope="default" type="STRING" value="403"/>
+                    </case>
+                    <case regex="400">
+                        <property name="ERROR_CODE" scope="default" type="STRING" value=""/>
+                        <property name="ERROR_MESSAGE" scope="default" type="STRING" value="400"/>
+                    </case>
+                    <case regex="500">
+                        <property name="ERROR_CODE" scope="default" type="STRING" value=""/>
+                        <property name="ERROR_MESSAGE" scope="default" type="STRING" value="500"/>
+                    </case>
+                    <default>
+                        <property expression="$axis2:HTTP_SC" name="ERROR_CODE" scope="default" type="STRING"/>
+                        <property name="ERROR_MESSAGE" scope="default" type="STRING" value="600"/>
+                    </default>
+                </switch>
+                <sequence key="snsErrorSeq"/>
+            </then>
+            <else/>
+        </filter>
+        <amazonsns.publish>
+            <message>{$func:event}</message>
+            <subject>Hello</subject>
+            <topicArn>arn:aws:sns:us-east-2:717755997736:MyTopic</topicArn>
+        </amazonsns.publish>
+        <log level="full">
+            <property name="message" value="sns message published"/>
+        </log>
+    </sequence>
+</template>

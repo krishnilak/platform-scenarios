@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/search" name="filesearchAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource inSequence="fileSearchSeq" methods="GET">
+        <outSequence>
+            <drop/>
+        </outSequence>
+        <faultSequence>
+            <log category="ERROR" level="full"/>
+        </faultSequence>
+    </resource>
+</api>

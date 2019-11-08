@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="snsErrorSeq" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <log/>
+    <property expression="get-property('transport', 'Content-Type')" name="contentTypeValue" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <filter xmlns:ns="http://org.apache.synapse/xsd" xpath="get-property('contentTypeValue') = 'application/json' or get-property('contentTypeValue') = 'text/json'">
+        <then>
+            <payloadFactory media-type="json">
+                <format> {"error_code":"$1", "error_message":"$2"}
+          </format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('ERROR_CODE')"/>
+                    <arg evaluator="xml" expression="get-property('ERROR_MESSAGE')"/>
+                </args>
+            </payloadFactory>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+        </then>
+        <else/>
+    </filter>
+    <filter xmlns:ns="http://org.apache.synapse/xsd" xpath="get-property('contentTypeValue') = 'application/xml' or get-property('contentTypeValue') = 'text/xml'">
+        <then>
+            <payloadFactory media-type="xml">
+                <format>
+                    <error_info>
+                        <error_code>$1</error_code>
+                        <error_message>$2</error_message>
+                    </error_info>
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('ERROR_CODE')"/>
+                    <arg evaluator="xml" expression="get-property('ERROR_MESSAGE')"/>
+                </args>
+            </payloadFactory>
+            <property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+        </then>
+        <else/>
+    </filter>
+    <respond/>
+</sequence>
